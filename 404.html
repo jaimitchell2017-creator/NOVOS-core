@@ -1,1 +1,31 @@
-<!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVOS Core</title>
+</head>
+
+<body>
+<script>
+(function () {
+  // Your GitHub Pages base URL
+  const base = "/NOVOS-core/";
+
+  // Keep every OAuth parameter, including authorization_id
+  const query = window.location.search;
+
+  // Keep any hash as well
+  const hash = window.location.hash;
+
+  // Send the request to the main NOVOS Core page
+  window.location.replace(base + query + hash);
+})();
+</script>
+
+<noscript>
+  <p>NOVOS Core is loading...</p>
+  <p>Please enable JavaScript.</p>
+</noscript>
+</body>
+</html>
