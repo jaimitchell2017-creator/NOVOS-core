@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NOVOS Core</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080b14;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: min(92%, 500px);
+    }
+
+    .card {
+      background: #111625;
+      border: 1px solid #27304a;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #6c63ff, #00c6ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    p {
+      color: #aeb6cc;
+      line-height: 1.5;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border-radius: 12px;
+      border: 1px solid #303952;
+      background: #0b0f1c;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #6c63ff;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6c63ff, #00a8ff);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    button.secondary {
+      background: #20273a;
+    }
+
+    button.danger {
+      background: #9d3048;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #171d2d;
+      color: #bfc8dc;
+      word-break: break-word;
+    }
+
+    .permission {
+      background: #0c1220;
+      border: 1px solid #2b3550;
+      padding: 15px;
+      border-radius: 12px;
+      margin: 10px 0;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .buttons button {
+      flex: 1;
+    }
+
+    .user-box {
+      padding: 15px;
+      background: #0c1220;
+      border-radius: 12px;
+      margin: 15px 0;
+      word-break: break-word;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #7f8ba8;
+    }
+
+    .loading {
+      text-align: center;
+      color: #aeb6cc;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- NORMAL LOGIN -->
+  <div id="authCard" class="card">
+
+    <div class="logo">N</div>
+
+    <h1>NOVOS Core</h1>
+    <p>One account for your NOVOS services.</p>
+
+    <div id="loginArea">
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Email address"
+        autocomplete="email"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+
+      <button onclick="signIn()">Sign In</button>
+
+      <button class="secondary" onclick="signUp()">
+        Create NOVOS Account
+      </button>
+
+      <button class="secondary" onclick="resetPassword()">
+        Forgot Password?
+      </button>
+
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+  </div>
+
+
+  <!-- DASHBOARD -->
+  <div id="dashboardCard" class="card hidden">
+
+    <div class="logo">N</div>
+
+    <h1>Welcome to NOVOS</h1>
+
+    <div class="user-box">
+      <strong>Signed in as:</strong>
+      <div id="userEmail"></div>
+    </div>
+
+    <p>
+      Your NOVOS Core account is working.
+    </p>
+
+    <button onclick="signOut()" class="danger">
+      Sign Out
+    </button>
+
+  </div>
+
+
+  <!-- OAUTH CONSENT -->
+  <div id="oauthCard" class="card hidden">
+
+    <div class="logo">N</div>
+
+    <h1>NOVOS Sign In</h1>
+
+    <div id="oauthLoading" class="loading">
+      Loading authorization request...
+    </div>
+
+    <div id="oauthContent" class="hidden">
+
+      <p>
+        <strong id="oauthClientName">An application</strong>
+        wants to use your NOVOS account.
+      </p>
+
+      <div class="permission">
+        <strong>Requested access</strong>
+        <div id="oauthScopes"></div>
+      </div>
+
+      <p class="small">
+        Only approve this request if you trust the application.
+      </p>
+
+      <div class="buttons">
+
+        <button
+          class="secondary"
+          onclick="denyOAuth()">
+          Deny
+        </button>
+
+        <button
+          onclick="approveOAuth()">
+          Allow
+        </button>
+
+      </div>
+
+    </div>
+
+    <div id="oauthError" class="status hidden"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+/* =========================================================
+   NOVOS CORE CONFIGURATION
+   ========================================================= */
+
+const SUPABASE_URL =
+  "https://ckagvbacdesdhunacdts.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_7JryDJaO6H0Me254sN-xkg_xLd2x5gX";
+
+const client =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================================================
+   PAGE ELEMENTS
+   ========================================================= */
+
+const authCard =
+  document.getElementById("authCard");
+
+const dashboardCard =
+  document.getElementById("dashboardCard");
+
+const oauthCard =
+  document.getElementById("oauthCard");
+
+const statusBox =
+  document.getElementById("status");
+
+const userEmail =
+  document.getElementById("userEmail");
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function showStatus(message) {
+  statusBox.textContent = message;
+  statusBox.classList.remove("hidden");
+}
+
+function hideStatus() {
+  statusBox.classList.add("hidden");
+}
+
+
+/* =========================================================
+   NORMAL AUTH
+   ========================================================= */
+
+async function signUp() {
+
+  hideStatus();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  if (!email || !password) {
+    showStatus("Please enter an email and password.");
+    return;
+  }
+
+  showStatus("Creating your NOVOS account...");
+
+  const { data, error } =
+    await client.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        emailRedirectTo:
+          window.location.origin +
+          window.location.pathname
+      }
+    });
+
+  if (error) {
+    showStatus(error.message);
+    return;
+  }
+
+  showStatus(
+    "Account created! Check your email if confirmation is required."
+  );
+}
+
+
+async function signIn() {
+
+  hideStatus();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  if (!email || !password) {
+    showStatus("Please enter your email and password.");
+    return;
+  }
+
+  showStatus("Signing in...");
+
+  const { data, error } =
+    await client.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+  if (error) {
+    showStatus(error.message);
+    return;
+  }
+
+  showDashboard(data.user);
+}
+
+
+async function resetPassword() {
+
+  hideStatus();
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  if (!email) {
+    showStatus(
+      "Enter your email address first."
+    );
+    return;
+  }
+
+  const { error } =
+    await client.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:
+          window.location.origin +
+          window.location.pathname
+      }
+    );
+
+  if (error) {
+    showStatus(error.message);
+    return;
+  }
+
+  showStatus(
+    "Password reset email sent."
+  );
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+function showDashboard(user) {
+
+  authCard.classList.add("hidden");
+  oauthCard.classList.add("hidden");
+
+  dashboardCard.classList.remove("hidden");
+
+  userEmail.textContent =
+    user.email || "NOVOS user";
+}
+
+
+async function signOut() {
+
+  await client.auth.signOut();
+
+  dashboardCard.classList.add("hidden");
+  authCard.classList.remove("hidden");
+
+  document.getElementById("email").value = "";
+  document.getElementById("password").value = "";
+
+  showStatus("You have been signed out.");
+}
+
+
+/* =========================================================
+   OAUTH
+   ========================================================= */
+
+let authorizationId = null;
+let authorizationDetails = null;
+
+
+/* Check whether Supabase sent us an OAuth request */
+
+async function checkOAuthRequest() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  authorizationId =
+    params.get("authorization_id");
+
+  if (!authorizationId) {
+    return false;
+  }
+
+  /*
+    OAuth request detected.
+  */
+
+  authCard.classList.add("hidden");
+  dashboardCard.classList.add("hidden");
+  oauthCard.classList.remove("hidden");
+
+  try {
+
+    const result =
+      await client.auth.oauth
+        .getAuthorizationDetails(
+          authorizationId
+        );
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    authorizationDetails =
+      result.data;
+
+    document
+      .getElementById("oauthLoading")
+      .classList.add("hidden");
+
+    document
+      .getElementById("oauthContent")
+      .classList.remove("hidden");
+
+    /*
+      Display application name.
+    */
+
+    const clientName =
+      authorizationDetails?.client?.name ||
+      authorizationDetails?.client_name ||
+      "An application";
+
+    document
+      .getElementById("oauthClientName")
+      .textContent = clientName;
+
+
+    /*
+      Display requested scopes.
+    */
+
+    const scopes =
+      authorizationDetails?.scopes ||
+      authorizationDetails?.scope ||
+      "openid";
+
+    let scopeText = "";
+
+    if (Array.isArray(scopes)) {
+
+      scopeText =
+        scopes.join(", ");
+
+    } else {
+
+      scopeText =
+        String(scopes);
+
+    }
+
+    document
+      .getElementById("oauthScopes")
+      .textContent =
+      scopeText;
+
+
+    return true;
+
+  } catch (error) {
+
+    document
+      .getElementById("oauthLoading")
+      .classList.add("hidden");
+
+    const errorBox =
+      document.getElementById(
+        "oauthError"
+      );
+
+    errorBox.textContent =
+      "OAuth error: " +
+      error.message;
+
+    errorBox.classList.remove("hidden");
+
+    return true;
+  }
+}
+
+
+/* =========================================================
+   APPROVE OAUTH
+   ========================================================= */
+
+async function approveOAuth() {
+
+  if (!authorizationId) {
+    return;
+  }
+
+  const errorBox =
+    document.getElementById(
+      "oauthError"
+    );
+
+  errorBox.classList.add("hidden");
+
+  document
+    .getElementById("oauthContent")
+    .classList.add("hidden");
+
+  document
+    .getElementById("oauthLoading")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("oauthLoading")
+    .textContent =
+    "Authorizing NOVOS account...";
+
+  try {
+
+    const { data, error } =
+      await client.auth.oauth
+        .approveAuthorization(
+          authorizationId
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      data &&
+      data.redirect_url
+    ) {
+
+      window.location.href =
+        data.redirect_url;
+
+      return;
+    }
+
+    throw new Error(
+      "Supabase did not return an authorization redirect."
+    );
+
+  } catch (error) {
+
+    document
+      .getElementById("oauthLoading")
+      .classList.add("hidden");
+
+    errorBox.textContent =
+      "Could not approve authorization: " +
+      error.message;
+
+    errorBox.classList.remove("hidden");
+
+    document
+      .getElementById("oauthContent")
+      .classList.remove("hidden");
+  }
+}
+
+
+/* =========================================================
+   DENY OAUTH
+   ========================================================= */
+
+async function denyOAuth() {
+
+  if (!authorizationId) {
+    return;
+  }
+
+  const errorBox =
+    document.getElementById(
+      "oauthError"
+    );
+
+  errorBox.classList.add("hidden");
+
+  document
+    .getElementById("oauthContent")
+    .classList.add("hidden");
+
+  document
+    .getElementById("oauthLoading")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("oauthLoading")
+    .textContent =
+    "Cancelling authorization...";
+
+  try {
+
+    const { data, error } =
+      await client.auth.oauth
+        .denyAuthorization(
+          authorizationId
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    if (
+      data &&
+      data.redirect_url
+    ) {
+
+      window.location.href =
+        data.redirect_url;
+
+      return;
+    }
+
+    throw new Error(
+      "Supabase did not return a denial redirect."
+    );
+
+  } catch (error) {
+
+    document
+      .getElementById("oauthLoading")
+      .classList.add("hidden");
+
+    errorBox.textContent =
+      "Could not deny authorization: " +
+      error.message;
+
+    errorBox.classList.remove("hidden");
+
+    document
+      .getElementById("oauthContent")
+      .classList.remove("hidden");
+  }
+}
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+async function startNOVOSCore() {
+
+  /*
+    FIRST:
+    Check whether this is an OAuth request.
+  */
+
+  const isOAuth =
+    await checkOAuthRequest();
+
+  if (isOAuth) {
+    return;
+  }
+
+
+  /*
+    OTHERWISE:
+    Check normal NOVOS login.
+  */
+
+  const {
+    data: {
+      session
+    }
+  } = await client.auth.getSession();
+
+  if (session?.user) {
+
+    showDashboard(
+      session.user
+    );
+
+  } else {
+
+    authCard.classList.remove("hidden");
+  }
+}
+
+
+/* =========================================================
+   AUTH STATE CHANGES
+   ========================================================= */
+
+client.auth.onAuthStateChange(
+  (event, session) => {
+
+    /*
+      Don't interfere with an OAuth request.
+    */
+
+    if (authorizationId) {
+      return;
+    }
+
+    if (
+      session?.user &&
+      (
+        event === "SIGNED_IN" ||
+        event === "INITIAL_SESSION"
+      )
+    ) {
+
+      showDashboard(
+        session.user
+      );
+    }
+  }
+);
+
+
+/* Start NOVOS Core */
+
+startNOVOSCore();
+
+</script>
+
+</body>
+</html>
